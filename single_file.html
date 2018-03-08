@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title>单选文件上传</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]--> 
+</head>
+
+<body>
+<style>
+  img {
+    max-width: 100%;
+  }
+  .table img {
+    max-width: 100px;
+    height: auto;
+  }
+</style>
+<nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-6"
+        aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">七牛云存储 - JavaScript SDK</a>
+    </div>
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+      <ul class="nav navbar-nav">
+        <li class="active">
+          <a href="#">上传示例</a>
+        </li>
+        <li>
+          <a href="http://developer.qiniu.com/code/v6/sdk/javascript.html">SDK 文档</a>
+        </li>
+        <li>
+          <a href="/performance">上传速度检测</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="single_file.html" aria-controls="singleFile">单文件上传</a></li>
+    <li role="presentation"><a href="multiple_file.html" aria-controls="mutipleFile">多文件上传</a></li>
+    <li role="presentation"><a href="single_img.html" aria-controls="singleImg">单图片上传</a></li>
+    <li role="presentation"><a href="multiple_img.html" aria-controls="mutipleImg">多图片上传</a></li>
+    <li role="presentation"><a href="cropper_img.html" aria-controls="cropperImg">图片裁切</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="singleFile">
+      <div class="row" style="margin-top: 20px;">
+        <ul class="tip text-mute">
+          <li>
+            <small>
+              支持上传文件类型 doc,docx,ppt,pptx,pdf
+            </small>
+          </li>
+          <li>
+            <small>
+               单次只允许最多上传一个文件
+            </small>
+          </li>
+          <li>
+            <small>不允许重复上传同一个文件。</small>
+          </li>
+          <li>
+            <small>最大上传文件大小不超过10M。</small>
+          </li>
+          <li>
+            <small>累计上传文件数量不得超过5个</small>
+          </li>
+        </ul>
+        <div id="container" style="position: relative;">
+          <a class="btn btn-default btn-lg " id="singleFileBtn" href="#">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>选择文件</span>
+          </a>
+        </div>
+       </div>
+    </div>
+  </div>
+  <div class="col-md-12 ">
+    <table class="table table-striped table-hover text-left" style="margin-top:40px;">
+      <thead>
+        <tr>
+          <th class="col-md-4">Filename</th>
+          <th class="col-md-2">Size</th>
+          <th class="col-md-6">Detail</th>
+        </tr>
+      </thead>
+      <tbody id="filesList">
+        
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+crossorigin="anonymous"></script>
+<script src="http://cdn.bootcss.com/plupload/2.1.9/moxie.min.js">
+</script>
+<script src="http://cdn.bootcss.com/plupload/2.1.9/plupload.full.min.js"></script>
+<script src="http://cdn.bootcss.com/plupload/2.1.9/i18n/zh_CN.js"></script>
+<!-- 注意： qiniu.min.js请使用如下cdn地址 
+解决问题：【qiniu.min.js 1.0.17.1版本】：Uncaught TypeError: Cannot read property 'isExpired' of undefined
+详细问题请查看: https://segmentfault.com/q/1010000007214988 https://github.com/qiniu/js-sdk/issues/188
+-->
+<script src="http://cdn.op110.com.cn/lib/js/qiniu.min.js"></script>
+<script src="js/fileUploader.js"></script>
+
+<script>
+  var tokenStr = 'NZrTFjztBSRINUzLMYGRGtuxYBzbE8MeLTXoRgyy:4UiXVvMLWRDMkvEAk26hhBZUJyI=:eyJzY29wZSI6Im9wMTE0LWRldiIsImRlYWRsaW5lIjoxNTIwNTE1NjIwfQ==';
+  var domain = 'https://cdn.dev.op114.com';
+  // 单文件上传
+  var uploader = Qiniu.createUploader({
+    button: 'singleFileBtn',  // 上传按钮
+    container: 'container',  // 容器
+    token: tokenStr, // token, 后端返回
+    domain: domain, // 当前域名
+    multi: false, // 是否允许多选
+    autoStart: true, // 是否开启自动上传
+    dragdrop: false, // 是否开启拖拽上传
+    maxTotalFileNum: 5, // 最大累计上传文件数量
+    fileSize: '10mb', // 文件可上传大小限制
+    extensions: 'doc,docx,ppt,pptx,pdf', // 允许上传文件类型
+    duplicate: false, // 是否允许重复上传同一张图片
+    add: function (up, file, src) {
+      var fileSize = (file.size/1024).toFixed(2) >= 1024 
+        ? ((file.size/1024/1024).toFixed(2) + 'MB')
+        : ((file.size/1024).toFixed(2) + 'KB');
+      var fileIcons = {
+        'doc': '//cdn.op110.com.cn/lib/imgs/op114_h5/word.png',
+        'docx': '//cdn.op110.com.cn/lib/imgs/op114_h5/word.png',
+        'ppt': '//cdn.op110.com.cn/lib/imgs/op114_h5/ppt.png',
+        'pptx': '//cdn.op110.com.cn/lib/imgs/op114_h5/ppt.png',
+        'pdf': '//cdn.op110.com.cn/lib/imgs/op114_h5/pdf.png'
+      };
+      var filenameArr = file.name.split('.');
+      var fileType = filenameArr[filenameArr.length-1]; // 获取文件扩展名
+      var $fileName = $('<td><p>'+ file.name +'</p><img src="'+ fileIcons[fileType] +'" alt=""></td>')
+      var $fileSize = $('<td> <p>' + fileSize + '</p> </td>');
+      var $progress = $('<td class="status"><p>上传进度：</p><div class="progress"><div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"> <span>0% 正在上传</span></div></div></td>');
+      var $fileItem = $('<tr id="'+ file.id +'"></tr>');
+
+      $fileItem.append($fileName)
+        .append($fileSize)
+        .append($progress);
+      $('#filesList').append($fileItem);
+    },
+    progress: function (up, file) {
+      var $fileItem = $('#'+ file.id);
+      var percent = file.percent;
+      var progressText = percent + '% 正在上传';
+
+      $fileItem.find('.progress-bar')
+        .attr('aria-valuenow', percent)
+        .width(percent + '%')
+        .find('span').text(progressText);
+
+      console.log('文件上传进度%' + percent);      
+    },
+    success: function(up, file, src) {
+      var $fileItem = $('#'+ file.id);
+      var detailHtml = '<p>文件地址：<a href="'+ src +'" target="_blank">'+ src +'</a></p><p><a onclick="removeFile(\''+ file.id +'\')" class="btn btn-link">删除</a></p>';
+      var timer = setTimeout(function() {
+        $fileItem.find('.status').html(detailHtml);
+      }, 1000);
+      
+    },
+    error: function(err, errTip, file) {
+      // 错误处理
+      /* 错误码 err.code
+       * 值为-200，发生http网络错误时的错误代码，例如服务气端返回的状态码不是200
+       * 值为-300，发生磁盘读写错误时的错误代码，例如本地上某个文件不可读
+       * 值为-400，发生因为安全问题而产生的错误时的错误代码
+       * 值为-500，初始化时发生错误的错误代码
+       * 值为-600，当选择的文件太大时的错误代码
+       * 值为-601，当选择的文件类型不符合要求时的错误代码
+       * 值为-602，当选取了重复的文件而配置中又不允许有重复文件时的错误代码
+       * 值为-700，发生图片格式错误时的错误代码
+       * 值为-702，当文件大小超过了plupload所能处理的最大值时的错误代码
+       */
+      /* file = {
+        maxFileSize: '10MB',  文件大小限制
+        extensions: 'jpg,jpeg,gif,png' 文件类型限制
+      } */
+      if (err.code === -600) {
+        alert('文件大小必须小于' + file.maxFileSize + '！'); 
+      } else if (err.code === -601) {
+        alert('文件格式错误，仅支持上传扩展名为' + file.extensions + '的文件！');
+      } else if (err.code === -602) {
+        alert('请勿重复上传同一个文件！'); 
+      }
+    },
+    complete: function(up, files) {
+
+      files.forEach(function(file, index) {
+        var $fileItem = $('#'+ file.id);
+        var progressTexts = ['', '', '', '', '100% 上传失败', '100% 上传成功'];
+        
+        //  更改进度条状态
+        $fileItem.find('.progress-bar').find('span').text(progressTexts[file.status]);
+        if (file.status === 5) {
+          // 上传成功
+          $fileItem.find('.progress-bar').addClass('progress-bar-success').removeClass('progress-bar-info');
+        } else if (file.status === 4) {
+          // 上传失败
+          $fileItem.find('.progress-bar').addClass('progress-bar-danger').removeClass('progress-bar-info');
+        }
+      });
+    }
+  });
+
+
+  // 删除已上传指定文件
+  function removeFile(id) {
+    var up = uploader;
+    // 清空队列文件
+    up.files.forEach(function(curVal, index) {
+      if(curVal.id === id) {
+        up.removeFile(curVal); // 清空文件队列
+      }
+    });
+    $('#'+id).remove(); // 移除文件显示项
+  }
+
+</script>
+</body>
+
+</html>
